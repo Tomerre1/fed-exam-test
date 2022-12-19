@@ -20,6 +20,15 @@ const TicketPreview = ({
         Hide
       </button>
       <p>{ticket.content}</p>
+      {ticket?.labels && (
+        <div className='labels'>
+          {ticket?.labels.map((label, index) => (
+            <label key={index} className='label'>
+              {label}
+            </label>
+          ))}
+        </div>
+      )}
       <footer>
         <div className='meta-data'>
           By {ticket.userEmail} |{' '}

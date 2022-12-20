@@ -59,7 +59,7 @@ export class App extends React.PureComponent<{}, AppState> {
       this.setState((prevState) => ({
         ...prevState,
         page,
-        tickets: [...(prevState?.tickets || []), ...tickets],
+        tickets: [...prevState.tickets, ...tickets],
         totalFetchedResults: prevState.totalFetchedResults + tickets.length,
       }));
     }

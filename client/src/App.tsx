@@ -3,11 +3,12 @@ import './App.scss';
 import { createApiClient, Ticket } from './api';
 import { TicketsList } from './components/ticketsList';
 export type AppState = {
-  tickets?: Ticket[];
-  searchResults?: Ticket[];
+  tickets: Ticket[];
+  searchResults: Ticket[];
   hideTicketsIds: string[];
   search: string;
   page: number;
+  totalFetchedResults: number;
 };
 
 const api = createApiClient();
@@ -19,6 +20,7 @@ export class App extends React.PureComponent<{}, AppState> {
     hideTicketsIds: [],
     search: '',
     page: 1,
+    totalFetchedResults: 0,
   };
 
   searchDebounce: any = null;
@@ -39,12 +41,17 @@ export class App extends React.PureComponent<{}, AppState> {
       window.innerHeight + document.documentElement.scrollTop ===
       document.scrollingElement?.scrollHeight
     ) {
+      if (this.state.totalFetchedResults > this.state.tickets.length) {
+        return;
+      }
       const page = this.state.page + 1;
       const tickets = await api.getTickets(this.state.search, page);
+      console.log('%c  tickets:', 'color: white;background: red;', tickets);
       this.setState((prevState) => ({
         ...prevState,
         page,
         tickets: [...(prevState?.tickets || []), ...tickets],
+        totalFetchedResults: prevState.totalFetchedResults + tickets.length,
       }));
     }
   };
@@ -63,8 +70,11 @@ export class App extends React.PureComponent<{}, AppState> {
     }));
   };
 
-  renderTickets = (tickets: Ticket[]) => {
-    const filteredTickets = tickets.filter((t) =>
+  renderTickets = (generalTickets: Ticket[]) => {
+    let tickets =
+      this.state.search.length > 0 ? this.state.searchResults : generalTickets;
+
+    const filteredTickets = tickets!.filter((t) =>
       (t.title.toLowerCase() + t.content.toLowerCase()).includes(
         this.state.search.toLowerCase()
       )
@@ -83,18 +93,18 @@ export class App extends React.PureComponent<{}, AppState> {
 
     this.searchDebounce = setTimeout(async () => {
       const tickets = await api.getTickets(val, 1);
-
       this.setState((prevState) => ({
         ...prevState,
         search: val,
-        tickets,
+        searchResults: tickets,
       }));
     }, 300);
   };
 
   render() {
-    const { tickets, hideTicketsIds } = this.state;
+    const { tickets, hideTicketsIds, search, searchResults } = this.state;
     const isResetOption = hideTicketsIds.length > 0;
+    const isSearchMode = search.length > 0;
 
     return (
       <main>
@@ -108,7 +118,12 @@ export class App extends React.PureComponent<{}, AppState> {
         </header>
         {tickets ? (
           <div className='results'>
-            <span>Showing {tickets.length} results</span>
+            <span>
+              Showing{' '}
+              {(isSearchMode ? searchResults.length : tickets.length) -
+                hideTicketsIds.length}{' '}
+              results
+            </span>
             {isResetOption && (
               <>
                 (<span>{hideTicketsIds.length} hidden tickets - </span>

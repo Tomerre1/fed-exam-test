@@ -20,7 +20,6 @@ app.use((_, res, next) => {
 });
 
 const findBy = (tickets:Ticket[],search:any)=>{
-  console.log(tickets.length)
   if (search) {
       const res = tickets.filter((ticket:Ticket) => {
       return ticket.title?.toLowerCase().includes(search.toLowerCase()) || ticket.content?.toLowerCase().includes(search.toLowerCase())

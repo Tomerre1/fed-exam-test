@@ -97,7 +97,19 @@ body {
         font-style: normal;
         color: #20455e;
       }
-
+      .content {
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-y: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        max-height: calc(3 * 1.5 * 14px);
+        &.show-less {
+          -webkit-line-clamp: unset;
+          max-height: none;
+        }
+      }
       .labels {
         display: flex;
         justify-content: end;

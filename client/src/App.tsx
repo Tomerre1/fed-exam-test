@@ -9,6 +9,7 @@ export type AppState = {
   search: string;
   page: number;
   totalFetchedResults: number;
+  isDarkMode: boolean;
 };
 
 const api = createApiClient();
@@ -21,14 +22,23 @@ export class App extends React.PureComponent<{}, AppState> {
     search: '',
     page: 1,
     totalFetchedResults: 0,
+    isDarkMode: true,
   };
 
   searchDebounce: any = null;
 
   async componentDidMount() {
+    if (!localStorage.getItem('theme')) {
+      localStorage.setItem('theme', 'light-mode');
+    }
+    const theme = localStorage.getItem('theme');
+    const isDarkMode = theme === 'dark-mode';
+    document.documentElement.classList.add(theme!);
     this.setState({
       tickets: await api.getTickets(this.state.search, this.state.page),
+      isDarkMode,
     });
+
     window.addEventListener('scroll', this.loadMore);
   }
 
@@ -46,7 +56,6 @@ export class App extends React.PureComponent<{}, AppState> {
       }
       const page = this.state.page + 1;
       const tickets = await api.getTickets(this.state.search, page);
-      console.log('%c  tickets:', 'color: white;background: red;', tickets);
       this.setState((prevState) => ({
         ...prevState,
         page,
@@ -88,7 +97,7 @@ export class App extends React.PureComponent<{}, AppState> {
     );
   };
 
-  onSearch = async (val: string, newPage?: number) => {
+  onSearch = async (val: string) => {
     clearTimeout(this.searchDebounce);
 
     this.searchDebounce = setTimeout(async () => {
@@ -101,13 +110,33 @@ export class App extends React.PureComponent<{}, AppState> {
     }, 300);
   };
 
+  toggleTheme = () => {
+    if (this.state.isDarkMode) {
+      document.documentElement.classList.remove('dark-mode');
+      document.documentElement.classList.add('light-mode');
+      localStorage.setItem('theme', 'light-mode');
+    } else {
+      document.documentElement.classList.remove('light-mode');
+      document.documentElement.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark-mode');
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      isDarkMode: !prevState.isDarkMode,
+    }));
+  };
+
   render() {
-    const { tickets, hideTicketsIds, search, searchResults } = this.state;
+    const { tickets, hideTicketsIds, search, searchResults, isDarkMode } =
+      this.state;
     const isResetOption = hideTicketsIds.length > 0;
     const isSearchMode = search.length > 0;
 
     return (
       <main>
+        <button className='toggle-theme' onClick={this.toggleTheme}>
+          {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+        </button>
         <h1>Tickets List</h1>
         <header>
           <input

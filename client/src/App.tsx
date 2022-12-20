@@ -4,23 +4,50 @@ import { createApiClient, Ticket } from './api';
 import { TicketsList } from './components/ticketsList';
 export type AppState = {
   tickets?: Ticket[];
+  searchResults?: Ticket[];
   hideTicketsIds: string[];
   search: string;
+  page: number;
 };
 
 const api = createApiClient();
 
 export class App extends React.PureComponent<{}, AppState> {
   state: AppState = {
-    search: '',
+    tickets: [],
+    searchResults: [],
     hideTicketsIds: [],
+    search: '',
+    page: 1,
   };
 
   searchDebounce: any = null;
 
   async componentDidMount() {
-    this.setState({ tickets: await api.getTickets() });
+    this.setState({
+      tickets: await api.getTickets(this.state.search, this.state.page),
+    });
+    window.addEventListener('scroll', this.loadMore);
   }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.loadMore);
+  }
+
+  loadMore = async () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop ===
+      document.scrollingElement?.scrollHeight
+    ) {
+      const page = this.state.page + 1;
+      const tickets = await api.getTickets(this.state.search, page);
+      this.setState((prevState) => ({
+        ...prevState,
+        page,
+        tickets: [...(prevState?.tickets || []), ...tickets],
+      }));
+    }
+  };
 
   onHide = (id: string) => {
     this.setState((prevState) => ({
@@ -55,9 +82,12 @@ export class App extends React.PureComponent<{}, AppState> {
     clearTimeout(this.searchDebounce);
 
     this.searchDebounce = setTimeout(async () => {
+      const tickets = await api.getTickets(val, 1);
+
       this.setState((prevState) => ({
         ...prevState,
         search: val,
+        tickets,
       }));
     }, 300);
   };

@@ -28,7 +28,7 @@ const TicketPreview = ({
     : { display: 'block' };
 
   return (
-    <li key={ticket.id} className='ticket' style={style}>
+    <li className='ticket' style={style}>
       <h5 className='title'>{ticket.title}</h5>
       <button className='hide-ticket' onClick={() => onHide(ticket.id)}>
         Hide

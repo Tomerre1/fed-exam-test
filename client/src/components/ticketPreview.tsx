@@ -1,5 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Ticket } from '../api';
+import { Footer } from './Footer';
+import { Labels } from './Labels';
+import { ShowMoreOrLess } from './ShowMoreOrLess';
 
 const TicketPreview = ({
   ticket,
@@ -30,32 +33,16 @@ const TicketPreview = ({
       <button className='hide-ticket' onClick={() => onHide(ticket.id)}>
         Hide
       </button>
-      <p
-        ref={ref}
-        className={`content ${toggleShow ? 'show-less' : 'show-more'}`}
-      >
+      <p ref={ref} className={`content ${toggleShow && 'show-less'}`}>
         {ticket.content}
       </p>
-      {isMoreThan3Lines && (
-        <span onClick={() => setToggleShow(!toggleShow)}>
-          {toggleShow ? 'Show Less' : 'Show More'}
-        </span>
-      )}
-      {ticket?.labels && (
-        <div className='labels'>
-          {ticket?.labels.map((label, index) => (
-            <label key={index} className='label'>
-              {label}
-            </label>
-          ))}
-        </div>
-      )}
-      <footer>
-        <div className='meta-data'>
-          By {ticket.userEmail} |
-          {new Date(ticket.creationTime).toLocaleString()}
-        </div>
-      </footer>
+      <ShowMoreOrLess
+        setToggleShow={setToggleShow}
+        toggleShow={toggleShow}
+        isMoreThan3Lines={isMoreThan3Lines}
+      />
+      <Labels ticket={ticket} />
+      <Footer ticket={ticket} />
     </li>
   );
 };
